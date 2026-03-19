@@ -3,7 +3,8 @@
   "builds": [
     {
       "src": "package.json",
-      "use": "@vercel/static-build"
+      "use": "@vercel/static-build",
+      "config": { "distDir": "dist" }
     },
     {
       "src": "backend/server.js",
@@ -14,6 +15,14 @@
     {
       "src": "/api/(.*)",
       "dest": "backend/server.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1",
+      "continue": true
+    },
+    {
+      "handle": "filesystem"
     },
     {
       "src": "/(.*)",
