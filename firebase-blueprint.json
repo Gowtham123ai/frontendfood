@@ -1,0 +1,79 @@
+{
+  "entities": {
+    "users": {
+      "title": "User",
+      "description": "Application users including customers and admins",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "admin", "manager", "delivery_person"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "blocked": { "type": "boolean" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "menu": {
+      "title": "Menu Item",
+      "description": "Food items available for order",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "category": { "type": "string", "enum": ["Veg", "Non-Veg", "Drinks"] },
+        "imageUrl": { "type": "string" },
+        "description": { "type": "string" },
+        "rating": { "type": "number" },
+        "available": { "type": "boolean" }
+      },
+      "required": ["name", "price", "category"]
+    },
+    "orders": {
+      "title": "Order",
+      "description": "Customer orders",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "items": { "type": "array" },
+        "totalAmount": { "type": "number" },
+        "status": { "type": "string", "enum": ["Pending", "Preparing", "Delivered", "Cancelled"] },
+        "address": { "type": "string" },
+        "location": { "type": "object" },
+        "paymentStatus": { "type": "string", "enum": ["Pending", "Success", "Failed"] },
+        "razorpayOrderId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "items", "totalAmount", "status"]
+    },
+    "analytics": {
+      "title": "Analytics",
+      "description": "Daily statistics",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string" },
+        "totalOrders": { "type": "number" },
+        "revenue": { "type": "number" }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "users",
+      "description": "User profiles"
+    },
+    "/menu/{itemId}": {
+      "schema": "menu",
+      "description": "Kitchen menu"
+    },
+    "/orders/{orderId}": {
+      "schema": "orders",
+      "description": "Customer orders"
+    },
+    "/analytics/{date}": {
+      "schema": "analytics",
+      "description": "Daily analytics"
+    }
+  }
+}

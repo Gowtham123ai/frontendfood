@@ -1,0 +1,9 @@
+{
+  "name": "MAGIZHAMUDHU Kitchen",
+  "description": "A premium cloud kitchen with real-time order tracking, secure payments, and bilingual support.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}
