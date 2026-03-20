@@ -90,8 +90,11 @@ async function createInvoicePDF(order, filePath) {
   });
 }
 
-// 0. Send COD Bill Email Route (Frontend writes to Firestore, Backend ONLY sends email)
-app.post("/send-cod-bill", async (req, res) => {
+// Routes
+const router = express.Router();
+
+// 0. Send COD Bill Email Route
+router.post("/send-cod-bill", async (req, res) => {
   console.log("📥 Received COD Bill Request!");
   try {
     const orderData = req.body;
@@ -106,7 +109,7 @@ app.post("/send-cod-bill", async (req, res) => {
     await transporter.sendMail({
       from: `"MAGIZHAMUDHU Kitchen" <${process.env.GMAIL_USER}>`,
       to: orderData.email,
-      subject: "Your MAGIZHAMUDHU Order Confirmation (COD) \uD83C\uDF5B",
+      subject: "Your MAGIZHAMUDHU Order Confirmation (COD) 🍱",
       text: `Hi ${orderData.userName}, thank you for your COD order! Attached is your order summary for Order #${orderId.slice(-6)}.`,
       attachments: [{ filename: `Invoice_${orderId.slice(-6)}.pdf`, path: tempFilePath }],
     });
@@ -121,14 +124,16 @@ app.post("/send-cod-bill", async (req, res) => {
 });
 
 // 1. Create Order Route
-app.post("/create-order", async (req, res) => {
+router.post("/create-order", async (req, res) => {
   try {
     const { amount } = req.body;
+    console.log("💰 Creating order for amount:", amount);
     const order = await razorpay.orders.create({
       amount: Math.round(amount * 100),
       currency: "INR",
       receipt: `receipt_${Date.now()}`
     });
+    console.log("✅ Order created:", order.id);
     res.json(order);
   } catch (err) {
     console.error("Create Order Error:", err);
@@ -137,7 +142,7 @@ app.post("/create-order", async (req, res) => {
 });
 
 // 2. Verify Payment Route
-app.post("/verify-payment", async (req, res) => {
+router.post("/verify-payment", async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, orderData } = req.body;
 
@@ -152,29 +157,34 @@ app.post("/verify-payment", async (req, res) => {
     }
 
     // Save to Firestore
-    const finalOrder = {
-      ...orderData,
-      id: razorpay_order_id,
-      paymentId: razorpay_payment_id,
-      status: 'Pending',
-      createdAt: admin.firestore.FieldValue.serverTimestamp()
-    };
-    await db.collection("orders").doc(razorpay_order_id).set(finalOrder);
+    try {
+      const finalOrder = {
+        ...orderData,
+        id: razorpay_order_id,
+        paymentId: razorpay_payment_id,
+        status: 'Pending',
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      };
+      await db.collection("orders").doc(razorpay_order_id).set(finalOrder);
 
-    // Generate Invoice
-    const tempFilePath = path.join(os.tmpdir(), `invoice_${razorpay_order_id}.pdf`);
-    await createInvoicePDF(finalOrder, tempFilePath);
+      // Generate Invoice
+      const tempFilePath = path.join(os.tmpdir(), `invoice_${razorpay_order_id}.pdf`);
+      await createInvoicePDF(finalOrder, tempFilePath);
 
-    // Send Email
-    await transporter.sendMail({
-      from: `"MAGIZHAMUDHU Kitchen" <${process.env.GMAIL_USER}>`,
-      to: orderData.email,
-      subject: "Your MAGIZHAMUDHU Order Invoice \uD83C\uDF5B",
-      text: `Hi ${orderData.userName}, thank you for your order! Attached is your invoice for Order #${razorpay_order_id.slice(-6)}.`,
-      attachments: [{ filename: `Invoice_${razorpay_order_id.slice(-6)}.pdf`, path: tempFilePath }],
-    });
+      // Send Email
+      await transporter.sendMail({
+        from: `"MAGIZHAMUDHU Kitchen" <${process.env.GMAIL_USER}>`,
+        to: orderData.email,
+        subject: "Your MAGIZHAMUDHU Order Invoice 🍱",
+        text: `Hi ${orderData.userName}, thank you for your order! Attached is your invoice for Order #${razorpay_order_id.slice(-6)}.`,
+        attachments: [{ filename: `Invoice_${razorpay_order_id.slice(-6)}.pdf`, path: tempFilePath }],
+      });
 
-    if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
+      if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
+    } catch (dbErr) {
+      console.error("Post-payment processing error (Firestore/Email):", dbErr);
+      // Don't fail the response if email/firestore fails after payment is confirmed
+    }
 
     res.json({ success: true });
   } catch (err) {
@@ -182,6 +192,10 @@ app.post("/verify-payment", async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
+
+app.use("/api", router);
+app.use("/", router);
+
 
 const PORT = 5000;
 app.listen(PORT, () => console.log(`🚀 MAGIZHAMUDHU Backend running on port ${PORT}`));

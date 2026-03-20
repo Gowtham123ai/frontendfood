@@ -21,7 +21,7 @@ export default function CartView({ cart, onUpdateQty, onRemove, onCheckoutSucces
   const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:5000');
 
   const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   const deliveryFee = subtotal > 500 ? 0 : 40;
@@ -144,7 +144,20 @@ export default function CartView({ cart, onUpdateQty, onRemove, onCheckoutSucces
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ amount: total })
         });
+        
+        if (!createOrderRes.ok) {
+          const errorData = await createOrderRes.json().catch(() => ({}));
+          console.error('Backend order creation failed:', errorData);
+          throw new Error('Failed to create order on server');
+        }
+
         const order = await createOrderRes.json();
+        
+        if (!order || !order.id) {
+          console.error('Invalid order received from backend:', order);
+          throw new Error('Invalid order response');
+        }
+
 
         const options = {
           key: import.meta.env.VITE_RAZORPAY_KEY_ID,
