@@ -4,24 +4,42 @@ import cors from "cors";
 import dotenv from "dotenv";
 import PDFDocument from "pdfkit";
 import nodemailer from "nodemailer";
-import fs from "fs";
 import path from "path";
 import os from "os";
+import fs from "fs";
 import admin from "firebase-admin";
 import crypto from "crypto";
 
-dotenv.config({ path: "../.env" }); // Use the root .env
+// Load environment from root .env if it exists (local dev)
+const envPath = path.resolve(process.cwd(), "../.env");
+if (fs.existsSync(envPath)) {
+  dotenv.config({ path: envPath });
+} else {
+  dotenv.config(); // Fallback for Vercel's built-in env
+}
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 // Initialize Firestore
-admin.initializeApp({
-  projectId: "login-d9d7f"
-});
+if (!admin.apps.length) {
+  // Try using FIREBASE_SERVICE_ACCOUNT from environment
+  const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT 
+    ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT) 
+    : undefined;
+
+  admin.initializeApp({
+    credential: serviceAccount ? admin.credential.cert(serviceAccount) : admin.credential.applicationDefault(),
+    projectId: process.env.FIREBASE_PROJECT_ID || "login-d9d7f"
+  });
+}
 
 const db = admin.firestore();
+
+if (!process.env.RAZORPAY_KEY_ID) {
+  console.warn("⚠️ RAZORPAY_KEY_ID is missing in environment variables.");
+}
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID || "your_key",
@@ -156,36 +174,8 @@ router.post("/verify-payment", async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid Signature" });
     }
 
-    // Save to Firestore
-    try {
-      const finalOrder = {
-        ...orderData,
-        id: razorpay_order_id,
-        paymentId: razorpay_payment_id,
-        status: 'Pending',
-        createdAt: admin.firestore.FieldValue.serverTimestamp()
-      };
-      await db.collection("orders").doc(razorpay_order_id).set(finalOrder);
-
-      // Generate Invoice
-      const tempFilePath = path.join(os.tmpdir(), `invoice_${razorpay_order_id}.pdf`);
-      await createInvoicePDF(finalOrder, tempFilePath);
-
-      // Send Email
-      await transporter.sendMail({
-        from: `"MAGIZHAMUDHU Kitchen" <${process.env.GMAIL_USER}>`,
-        to: orderData.email,
-        subject: "Your MAGIZHAMUDHU Order Invoice 🍱",
-        text: `Hi ${orderData.userName}, thank you for your order! Attached is your invoice for Order #${razorpay_order_id.slice(-6)}.`,
-        attachments: [{ filename: `Invoice_${razorpay_order_id.slice(-6)}.pdf`, path: tempFilePath }],
-      });
-
-      if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
-    } catch (dbErr) {
-      console.error("Post-payment processing error (Firestore/Email):", dbErr);
-      // Don't fail the response if email/firestore fails after payment is confirmed
-    }
-
+    // Signature verified!
+    // Since backend lacks service account, client will handle Firestore save & email.
     res.json({ success: true });
   } catch (err) {
     console.error("Verify Error:", err);

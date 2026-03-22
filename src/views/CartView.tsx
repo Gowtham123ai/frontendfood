@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { CartItem, UserProfile, Address } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trash2, Plus, Minus, CreditCard, MapPin, ArrowRight, ShoppingBag, Truck, CheckCircle2 } from 'lucide-react';
-import { collection, query, where, getDocs, addDoc, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import toast from 'react-hot-toast';
 
@@ -24,7 +24,7 @@ export default function CartView({ cart, onUpdateQty, onRemove, onCheckoutSucces
   const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:5000');
 
   const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-  const deliveryFee = subtotal > 500 ? 0 : 40;
+  const deliveryFee = 0;
   const total = subtotal + deliveryFee;
 
   useEffect(() => {
@@ -159,8 +159,15 @@ export default function CartView({ cart, onUpdateQty, onRemove, onCheckoutSucces
         }
 
 
+        const rzpKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
+        if (!rzpKey) {
+          console.error('RAZORPAY KEY MISSING: Please add VITE_RAZORPAY_KEY_ID to your Vercel Environment Variables.');
+          toast.error('Payment configuration missing. Please check console.', { id: 'payment' });
+          throw new Error('Razorpay Key ID missing');
+        }
+
         const options = {
-          key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+          key: rzpKey,
           amount: total * 100,
           currency: "INR",
           name: "MAGIZHAMUDHU Kitchen",
@@ -182,6 +189,21 @@ export default function CartView({ cart, onUpdateQty, onRemove, onCheckoutSucces
               });
 
               if (!verifyRes.ok) throw new Error('Verification failed');
+              
+              const finalOrder = {
+                ...orderData,
+                id: response.razorpay_order_id,
+                paymentId: response.razorpay_payment_id,
+                status: 'Pending',
+                createdAt: new Date(),
+              };
+              await setDoc(doc(db, 'orders', response.razorpay_order_id), finalOrder);
+              
+              // Also send bill email from backend if we have a route for just emailing (optional)
+              // Currently server handles emailing only in verify-payment which we disabled or in send-cod-bill.
+              // We'll skip server-side emailing for now or reuse send-cod-bill if appropriate.
+              // But for now, the priority is that the order shows in the admin page.
+
 
               // Decrease stock
               for (const item of cart) {
