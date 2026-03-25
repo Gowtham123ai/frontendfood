@@ -33,8 +33,20 @@ export default function Auth({ onAuthSuccess, adminOnly }: AuthProps) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    if (!(window as any).recaptchaVerifier) {
+      (window as any).recaptchaVerifier = new RecaptchaVerifier(
+        auth,
+        'recaptcha-container',
+        {
+          size: 'invisible',
+          callback: () => {
+            console.log('reCAPTCHA solved');
+          }
+        }
+      );
+    }
+    
     return () => {
-      // Cleanup recaptcha on component unmount
       if ((window as any).recaptchaVerifier) {
         try { (window as any).recaptchaVerifier.clear(); } catch (e) {}
         (window as any).recaptchaVerifier = null;
@@ -131,49 +143,18 @@ export default function Auth({ onAuthSuccess, adminOnly }: AuthProps) {
     
     setLoading(true);
     try {
-      let appVerifier = (window as any).recaptchaVerifier;
-
-      // If we don't have a verifier, we must create a fresh one.
-      if (!appVerifier) {
-        const container = document.getElementById('recaptcha-container');
-        if (container) {
-            container.innerHTML = ''; // Force wipe any lingering injected iframes 
-        }
-
-        appVerifier = new RecaptchaVerifier(
-          auth,
-          'recaptcha-container',
-          {
-            size: 'invisible',
-            callback: () => {
-              console.log('reCAPTCHA solved');
-            },
-            'expired-callback': () => {
-              console.log('reCAPTCHA expired');
-              if ((window as any).recaptchaVerifier) {
-                try { (window as any).recaptchaVerifier.clear(); } catch (e) {}
-                (window as any).recaptchaVerifier = null;
-              }
-            }
-          }
-        );
-        (window as any).recaptchaVerifier = appVerifier;
+      if (!(window as any).recaptchaVerifier) {
+         toast.error("reCAPTCHA holds. Please refresh the page.");
+         setLoading(false);
+         return;
       }
-
+      
+      const appVerifier = (window as any).recaptchaVerifier;
       const result = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
       setConfirmationResult(result);
       toast.success('OTP Sent! 📱');
     } catch (error: any) {
       console.error('Phone auth error:', error);
-      // Clean up fully so the user can try again
-      if ((window as any).recaptchaVerifier) {
-        try { (window as any).recaptchaVerifier.clear(); } catch (e) {}
-        (window as any).recaptchaVerifier = null;
-      }
-      const container = document.getElementById('recaptcha-container');
-      if (container) {
-          container.innerHTML = ''; 
-      }
 
       if (error.code === 'auth/invalid-app-credential') {
         toast.error('App credential error. Check reCAPTCHA config or try a test phone number.');
