@@ -184,9 +184,10 @@ export default function Auth({ onAuthSuccess, adminOnly }: AuthProps) {
       if (userDoc.exists()) {
         onAuthSuccess(userDoc.data() as UserProfile);
       } else {
+        const finalName = name.trim() ? name.trim() : 'Phone User';
         const newUser: UserProfile = {
           uid: result.user.uid,
-          name: 'Phone User',
+          name: finalName,
           email: '',
           phone,
           role: 'user',
@@ -279,6 +280,19 @@ export default function Auth({ onAuthSuccess, adminOnly }: AuthProps) {
         <div className="space-y-4">
           {!confirmationResult ? (
             <form onSubmit={handlePhoneSignIn} className="space-y-4">
+              {!isLogin && (
+                <div className="relative">
+                  <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" size={20} />
+                  <input
+                    type="text"
+                    placeholder="Full Name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full pl-12 pr-4 py-3 bg-slate-800 border border-slate-600 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-white placeholder-slate-400"
+                    required
+                  />
+                </div>
+              )}
               <div className="relative">
                 <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" size={20} />
                 <input
