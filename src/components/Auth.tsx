@@ -131,8 +131,16 @@ export default function Auth({ onAuthSuccess, adminOnly }: AuthProps) {
     
     setLoading(true);
     try {
-      if (!(window as any).recaptchaVerifier) {
-        (window as any).recaptchaVerifier = new RecaptchaVerifier(
+      let appVerifier = (window as any).recaptchaVerifier;
+
+      // If we don't have a verifier, we must create a fresh one.
+      if (!appVerifier) {
+        const container = document.getElementById('recaptcha-container');
+        if (container) {
+            container.innerHTML = ''; // Force wipe any lingering injected iframes 
+        }
+
+        appVerifier = new RecaptchaVerifier(
           auth,
           'recaptcha-container',
           {
@@ -149,19 +157,22 @@ export default function Auth({ onAuthSuccess, adminOnly }: AuthProps) {
             }
           }
         );
+        (window as any).recaptchaVerifier = appVerifier;
       }
-
-      const appVerifier = (window as any).recaptchaVerifier;
 
       const result = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
       setConfirmationResult(result);
       toast.success('OTP Sent! 📱');
     } catch (error: any) {
       console.error('Phone auth error:', error);
-      // Reset rerender to allow retry
+      // Clean up fully so the user can try again
       if ((window as any).recaptchaVerifier) {
         try { (window as any).recaptchaVerifier.clear(); } catch (e) {}
         (window as any).recaptchaVerifier = null;
+      }
+      const container = document.getElementById('recaptcha-container');
+      if (container) {
+          container.innerHTML = ''; 
       }
 
       if (error.code === 'auth/invalid-app-credential') {
