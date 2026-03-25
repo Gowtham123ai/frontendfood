@@ -32,6 +32,16 @@ export default function Auth({ onAuthSuccess, adminOnly }: AuthProps) {
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    return () => {
+      // Cleanup recaptcha on component unmount
+      if ((window as any).recaptchaVerifier) {
+        try { (window as any).recaptchaVerifier.clear(); } catch (e) {}
+        (window as any).recaptchaVerifier = null;
+      }
+    };
+  }, []);
+
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);

@@ -1,10 +1,20 @@
 import { GoogleGenAI } from "@google/genai";
 import { MenuItem } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || 'AIzaSyA_mock_key_for_now' });
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
+const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
 export async function getFoodSuggestions(prompt: string, menu: MenuItem[]) {
   try {
+    if (!ai) {
+      // Intelligent fallback for demo when API key is missing
+      const p = prompt.toLowerCase();
+      if (p.includes('hi') || p.includes('hello')) return "Hello! Welcome to MAGIZHAMUDHU Kitchen! What are you craving today? 🍔🍛";
+      if (p.includes('sweet') || p.includes('dessert')) return "If you have a sweet tooth, you must try our Triple Chocolate Brownie or traditional Rasmalai! 🍰";
+      if (p.includes('spicy') || p.includes('hot')) return "For spice lovers, our Hyderabad Chicken Biryani or Spicy Chettinad Curry will definitely hit the spot! 🔥";
+      return "That sounds great! I highly recommend checking out our 'Specials' section on the menu today. Let me know if you need help deciding! 👨‍🍳";
+    }
+
     const model = ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: `
@@ -22,12 +32,17 @@ export async function getFoodSuggestions(prompt: string, menu: MenuItem[]) {
     return response.text;
   } catch (error) {
     console.error("Gemini Error:", error);
-    return "Sorry, our AIchef is currently busy. Please try asking again later!";
+    return "Sorry, our AIchef is currently busy preparing in the kitchen. Please try asking again later! 🍳";
   }
 }
 
 export async function getAIRecommendations(menu: MenuItem[], userPreferences: string = ''): Promise<string[]> {
   try {
+    if (!ai) {
+      // Fallback rule-based if API key is missing
+      return menu.sort((a,b) => b.rating - a.rating).slice(0, 4).map(m => m.id);
+    }
+
     const hour = new Date().getHours();
     let timeOfDay = "evening";
     if (hour < 11) timeOfDay = "morning";

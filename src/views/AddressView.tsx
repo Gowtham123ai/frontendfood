@@ -94,8 +94,8 @@ export default function AddressView() {
     <div className="max-w-2xl mx-auto space-y-8 py-8 px-4">
       <div className="flex justify-between items-end">
         <div>
-          <h2 className="text-4xl font-black text-white tracking-tight">Delivery Addresses</h2>
-          <p className="text-slate-500 mt-2 font-medium">Manage your delivery locations</p>
+          <h2 className="text-4xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>Delivery Addresses</h2>
+          <p className="mt-2 font-medium" style={{ color: 'var(--text-muted)' }}>Manage your delivery locations</p>
         </div>
         {!showForm && (
           <button 
@@ -114,36 +114,40 @@ export default function AddressView() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             onSubmit={saveAddress}
-            className="bg-[#111827] p-8 rounded-[2.5rem] border border-slate-800 shadow-2xl space-y-6"
+            className="p-8 rounded-[2.5rem] border shadow-2xl space-y-6"
+            style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
           >
             <div className="space-y-4">
               <div className="relative group">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-orange-500 transition-colors" size={20} />
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 group-focus-within:text-orange-500 transition-colors" size={20} style={{ color: 'var(--text-muted)' }} />
                 <input
                   placeholder="Full Name"
                   value={form.name}
                   onChange={e => setForm({...form, name: e.target.value})}
-                  className="w-full pl-12 pr-4 py-4 bg-[#0b1120] border border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-orange-500 text-white transition-all"
+                  className="w-full pl-12 pr-4 py-4 border rounded-2xl outline-none focus:ring-2 focus:ring-orange-500 transition-all"
+                  style={{ background: 'var(--bg-primary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                 />
               </div>
 
               <div className="relative group">
-                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-orange-500 transition-colors" size={20} />
+                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 group-focus-within:text-orange-500 transition-colors" size={20} style={{ color: 'var(--text-muted)' }} />
                 <input
                   placeholder="Phone Number"
                   value={form.phone}
                   onChange={e => setForm({...form, phone: e.target.value})}
-                  className="w-full pl-12 pr-4 py-4 bg-[#0b1120] border border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-orange-500 text-white transition-all"
+                  className="w-full pl-12 pr-4 py-4 border rounded-2xl outline-none focus:ring-2 focus:ring-orange-500 transition-all"
+                  style={{ background: 'var(--bg-primary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                 />
               </div>
 
               <div className="relative group">
-                <MapPin className="absolute left-4 top-4 text-slate-600 group-focus-within:text-orange-500 transition-colors" size={20} />
+                <MapPin className="absolute left-4 top-4 group-focus-within:text-orange-500 transition-colors" size={20} style={{ color: 'var(--text-muted)' }} />
                 <textarea
                   placeholder="Street Address, Area, Landmark"
                   value={form.address}
                   onChange={e => setForm({...form, address: e.target.value})}
-                  className="w-full pl-12 pr-4 py-4 bg-[#0b1120] border border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-orange-500 text-white transition-all min-h-[120px]"
+                  className="w-full pl-12 pr-4 py-4 border rounded-2xl outline-none focus:ring-2 focus:ring-orange-500 transition-all min-h-[120px]"
+                  style={{ background: 'var(--bg-primary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                 />
               </div>
             </div>
@@ -172,7 +176,8 @@ export default function AddressView() {
           <div className="text-center py-12 text-slate-600 font-bold animate-pulse">Loading addresses...</div>
         ) : addresses.length === 0 ? (
           // FIX 3: SHOW NO SAVED ADDRESSES FOUND
-          <div className="bg-[#111827] border-2 border-dashed border-slate-800 rounded-[2.5rem] p-12 text-center text-slate-500 font-bold">
+          <div className="border-2 border-dashed rounded-[2.5rem] p-12 text-center font-bold"
+               style={{ background: 'var(--bg-elevated)', borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
             No saved addresses found 📍
           </div>
         ) : (
@@ -181,16 +186,17 @@ export default function AddressView() {
             <motion.div
               layout
               key={addr.id}
-              className="group bg-[#111827] p-6 rounded-3xl border border-orange-500/30 hover:border-orange-500 transition-all flex justify-between items-start"
+              className="group p-6 rounded-3xl border hover:border-orange-500 transition-all flex justify-between items-start"
+              style={{ background: 'var(--bg-elevated)', borderColor: 'var(--border)' }}
             >
               <div className="flex gap-4">
-                <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center text-orange-500 border border-slate-800">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-orange-500 border" style={{ background: 'var(--bg-primary)', borderColor: 'var(--border)' }}>
                   <MapPin size={24} />
                 </div>
                 <div>
-                  <h4 className="font-black text-white text-lg">{addr.name}</h4>
-                  <p className="text-slate-400 font-medium text-sm mt-0.5">{addr.phone}</p>
-                  <p className="text-slate-500 text-sm mt-3 leading-relaxed max-w-sm">{addr.address}</p>
+                  <h4 className="font-black text-lg" style={{ color: 'var(--text-primary)' }}>{addr.name}</h4>
+                  <p className="font-medium text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>{addr.phone}</p>
+                  <p className="text-sm mt-3 leading-relaxed max-w-sm" style={{ color: 'var(--text-muted)' }}>{addr.address}</p>
                 </div>
               </div>
               <button 

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { UserProfile, Order } from '../types';
 import { motion } from 'framer-motion';
-import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Package, Clock, CheckCircle2, XCircle, MapPin, Navigation } from 'lucide-react';
 import { format } from 'date-fns';
+import toast from 'react-hot-toast';
 import { handleFirestoreError, OperationType } from '../utils/firestoreErrorHandler';
 import TrackingModal from '../components/TrackingModal';
 
@@ -49,6 +50,17 @@ export default function OrdersView({ user }: OrdersViewProps) {
 
     return () => unsubscribe();
   }, [user.uid]);
+
+  const cancelOrder = async (orderId: string) => {
+    if (!window.confirm("Are you sure you want to cancel this order?")) return;
+    try {
+      await updateDoc(doc(db, 'orders', orderId), { status: 'Cancelled' });
+      toast.success("Order cancelled successfully");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to cancel order");
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -113,6 +125,14 @@ export default function OrdersView({ user }: OrdersViewProps) {
                   {getStatusIcon(order.status)}
                   {order.status}
                 </div>
+                {order.status === 'Pending' && (
+                  <button 
+                    onClick={() => cancelOrder(order.id)}
+                    className="px-4 py-2.5 bg-red-500/10 text-red-500 rounded-full hover:bg-red-500 hover:text-white transition-all font-bold text-xs uppercase tracking-widest border border-red-500/20 shadow-lg shadow-red-500/10"
+                  >
+                    Cancel
+                  </button>
+                )}
                 {order.status !== 'Cancelled' && (
                   <button 
                     onClick={() => setTrackingOrder(order)}

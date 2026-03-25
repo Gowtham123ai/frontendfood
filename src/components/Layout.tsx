@@ -194,9 +194,21 @@ export default function Layout({ children, user, onLogout, onNavigate, currentVi
       </nav>
 
       {/* MAIN */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-[80vh]">
         {children}
       </main>
+
+      {/* FOOTER */}
+      <footer className="w-full py-6 mt-auto border-t text-center" style={{ borderColor: 'var(--border)' }}>
+        <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
+          &copy; {new Date().getFullYear()} MAGIZHAMUDHU KITCHEN
+        </p>
+        <div className="flex justify-center gap-4 mt-2">
+          <a href="/privacy.html" className="text-xs hover:text-orange-500 transition-colors" style={{ color: 'var(--text-muted)' }}>
+            Privacy Policy
+          </a>
+        </div>
+      </footer>
 
       {/* FLOATING CART */}
       {user && user.role === 'user' && currentView !== 'cart' && (
