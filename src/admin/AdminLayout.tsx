@@ -10,7 +10,8 @@ import DeliveryPage from './DeliveryPage';
 import SettingsPage from './SettingsPage';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { db } from '../firebase';
-import { Search, Bell, UserCircle } from 'lucide-react';
+import { Search, Bell, UserCircle, Sun, Moon } from 'lucide-react';
+import { ThemeContext } from './ThemeContext';
 
 interface AdminLayoutProps {
   userRole: string;
@@ -18,8 +19,15 @@ interface AdminLayoutProps {
 }
 
 export default function AdminLayout({ userRole, onExitAdmin }: AdminLayoutProps) {
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [pendingCount, setPendingCount] = useState(0);
+  const [activeTab, setActiveTab] = React.useState('dashboard');
+  const [pendingCount, setPendingCount] = React.useState(0);
+  const [isDark, setIsDark] = React.useState(true);
+
+  React.useEffect(() => {
+    document.documentElement.classList.toggle('dark', isDark);
+    // Also update body background for admin panel
+    document.body.style.background = isDark ? '#0f172a' : '#f8f8f5';
+  }, [isDark]);
 
   React.useEffect(() => {
     const q = query(collection(db, 'orders'), where('status', '==', 'Pending'));
@@ -60,21 +68,50 @@ export default function AdminLayout({ userRole, onExitAdmin }: AdminLayoutProps)
   };
 
   return (
-    <div className="flex h-screen bg-[#0f172a] overflow-hidden w-full fixed inset-0 z-[60]">
+    <div
+      className="flex h-screen overflow-hidden w-full fixed inset-0 z-[60] transition-colors duration-300"
+      style={{ background: isDark ? '#0f172a' : '#f1f0ec', color: isDark ? '#f1f5f9' : '#0f0f0f' }}
+    >
       <Sidebar
         currentTab={activeTab}
         onNavigate={setActiveTab}
         onLogout={onExitAdmin}
         userRole={userRole}
+        isDark={isDark}
       />
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 bg-[#1e293b] border-b border-slate-800 flex items-center justify-between px-8 text-slate-300">
-          <div className="flex bg-slate-900 px-4 py-2 rounded-lg items-center gap-2 border border-slate-700 w-96">
+        <header
+          className="h-16 border-b flex items-center justify-between px-8 transition-colors duration-300"
+          style={{
+            background: isDark ? '#1e293b' : '#ffffff',
+            borderColor: isDark ? '#1e3a5f' : '#e2e8f0',
+            color: isDark ? '#cbd5e1' : '#334155'
+          }}
+        >
+          <div
+            className="flex px-4 py-2 rounded-lg items-center gap-2 border w-96"
+            style={{ background: isDark ? '#0f172a' : '#f1f5f9', borderColor: isDark ? '#334155' : '#e2e8f0' }}
+          >
             <Search size={18} className="text-slate-500" />
             <input type="text" placeholder="Search orders, items..." className="bg-transparent border-none outline-none w-full text-sm text-white" />
           </div>
-          <div className="flex items-center gap-6">
-            <button 
+          <div className="flex items-center gap-4">
+            {/* Theme Toggle */}
+            <button
+              onClick={() => setIsDark(!isDark)}
+              className="w-9 h-9 rounded-xl flex items-center justify-center transition-all border"
+              style={{
+                background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                color: isDark ? '#facc15' : '#64748b'
+              }}
+              title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            >
+              {isDark ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+
+            {/* Bell */}
+            <button
               onClick={() => setActiveTab('orders')}
               className="relative p-2 text-slate-400 hover:text-white transition-colors"
             >
@@ -85,7 +122,9 @@ export default function AdminLayout({ userRole, onExitAdmin }: AdminLayoutProps)
                 </span>
               )}
             </button>
-            <div className="flex items-center gap-3 border-l border-slate-700 pl-6 cursor-pointer hover:bg-slate-800 px-3 py-1 rounded-xl transition-all">
+
+            {/* User */}
+            <div className="flex items-center gap-3 border-l border-slate-700 pl-4 cursor-pointer hover:bg-slate-800 px-3 py-1 rounded-xl transition-all">
               <div className="text-right hidden md:block">
                 <p className="text-sm font-bold text-white capitalize">{userRole}</p>
                 <p className="text-xs text-slate-500">Admin Area</p>
@@ -97,8 +136,12 @@ export default function AdminLayout({ userRole, onExitAdmin }: AdminLayoutProps)
 
         <main className="flex-1 overflow-y-auto p-8 relative">
           {activeTab !== 'dashboard' && (
-            <h1 className="text-4xl font-black text-white mb-8 capitalize tracking-tight">{activeTab}</h1>
+            <div className="mb-8">
+              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-orange-500 mb-1">✦ Admin Panel</p>
+              <h1 className="text-4xl font-black tracking-tight capitalize" style={{ color: isDark ? '#f1f5f9' : '#0f172a' }}>{activeTab}</h1>
+            </div>
           )}
+          <ThemeContext.Provider value={isDark}>
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
@@ -110,6 +153,7 @@ export default function AdminLayout({ userRole, onExitAdmin }: AdminLayoutProps)
               {renderContent()}
             </motion.div>
           </AnimatePresence>
+          </ThemeContext.Provider>
         </main>
       </div>
     </div>

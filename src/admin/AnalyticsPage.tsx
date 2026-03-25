@@ -3,6 +3,7 @@ import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Order } from '../types';
 import Card from '../components/Card';
+import { useAdminTheme } from './ThemeContext';
 import { Map, MapPin } from 'lucide-react';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Title, Tooltip, Legend } from 'chart.js';
 import { Bar, Line, Doughnut, Pie } from 'react-chartjs-2';
@@ -10,6 +11,11 @@ import { Bar, Line, Doughnut, Pie } from 'react-chartjs-2';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Title, Tooltip, Legend);
 
 export default function AnalyticsPage({ userRole }: { userRole: string }) {
+  const isDark = useAdminTheme();
+  const textPrimary = isDark ? '#f1f5f9' : '#0f172a';
+  const textMuted   = isDark ? '#94a3b8' : '#64748b';
+  const cardBg      = isDark ? '#111827' : '#ffffff';
+  const cardBorder  = isDark ? '#1f2937' : '#e2e8f0';
   const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
@@ -96,26 +102,26 @@ export default function AnalyticsPage({ userRole }: { userRole: string }) {
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-[#111827] p-6 rounded-[2rem] border border-slate-800 shadow-xl">
-           <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">Total Revenue</p>
-           <h3 className="text-3xl font-black text-white">₹{totalRevenue.toLocaleString()}</h3>
+        <div className="p-6 rounded-[2rem] border shadow-xl transition-colors duration-300" style={{ background: cardBg, borderColor: cardBorder }}>
+           <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: textMuted }}>Total Revenue</p>
+           <h3 className="text-3xl font-black" style={{ color: textPrimary }}>₹{totalRevenue.toLocaleString()}</h3>
         </div>
-        <div className="bg-[#111827] p-6 rounded-[2rem] border border-slate-800 shadow-xl">
-           <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">Total Orders</p>
-           <h3 className="text-3xl font-black text-white">{totalOrders}</h3>
+        <div className="p-6 rounded-[2rem] border shadow-xl transition-colors duration-300" style={{ background: cardBg, borderColor: cardBorder }}>
+           <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: textMuted }}>Total Orders</p>
+           <h3 className="text-3xl font-black" style={{ color: textPrimary }}>{totalOrders}</h3>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-[#111827] p-8 rounded-[2.5rem] border border-slate-800 shadow-2xl">
-           <h3 className="text-xl font-bold text-white mb-6">Revenue Trend</h3>
+        <div className="lg:col-span-2 p-8 rounded-[2.5rem] border shadow-2xl transition-colors duration-300" style={{ background: cardBg, borderColor: cardBorder }}>
+           <h3 className="text-xl font-bold mb-6" style={{ color: textPrimary }}>Revenue Trend</h3>
            <div className="h-80">
               <Line data={revenueData} options={chartOptions} />
            </div>
         </div>
 
-        <div className="bg-[#111827] p-8 rounded-[2.5rem] border border-slate-800 shadow-2xl">
-           <h3 className="text-xl font-bold text-white mb-6">Top Dishes</h3>
+        <div className="p-8 rounded-[2.5rem] border shadow-2xl transition-colors duration-300" style={{ background: cardBg, borderColor: cardBorder }}>
+           <h3 className="text-xl font-bold mb-6" style={{ color: textPrimary }}>Top Dishes</h3>
            <div className="h-64 flex items-center">
               <Doughnut 
                 data={topItemsData} 

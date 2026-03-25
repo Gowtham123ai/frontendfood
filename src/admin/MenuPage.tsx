@@ -5,8 +5,14 @@ import { uploadImage } from '../services/imageService';
 import { MenuItem } from '../types';
 import { Plus, Edit2, Trash2, Upload, X, Save } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAdminTheme } from './ThemeContext';
 
 export default function MenuPage({ userRole }: { userRole: string }) {
+  const isDark = useAdminTheme();
+  const textPrimary = isDark ? '#f1f5f9' : '#0f172a';
+  const cardBg = isDark ? '#1e293b' : '#ffffff';
+  const cardBorder = isDark ? '#334155' : '#e2e8f0';
+  const inputBg = isDark ? '#0f172a' : '#f8fafc';
   const [menu, setMenu] = useState<MenuItem[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
@@ -161,7 +167,10 @@ export default function MenuPage({ userRole }: { userRole: string }) {
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {menu.map(m => (
-          <div key={m.id} className="bg-slate-800 rounded-xl overflow-hidden shadow-lg border border-slate-700 flex flex-col group transition-all hover:-translate-y-1">
+          <div key={m.id}
+            className="rounded-xl overflow-hidden shadow-lg flex flex-col group transition-all hover:-translate-y-1 border"
+            style={{ background: cardBg, borderColor: cardBorder }}
+          >
             <div className="h-40 w-full relative">
               <img src={m.imageUrl} alt={m.name} className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
@@ -173,7 +182,7 @@ export default function MenuPage({ userRole }: { userRole: string }) {
               </span>
             </div>
             <div className="p-4 flex flex-col flex-1">
-              <h3 className="font-bold text-white text-lg truncate mb-1">{m.name}</h3>
+              <h3 className="font-bold text-lg truncate mb-1" style={{ color: textPrimary }}>{m.name}</h3>
               <p className="text-orange-500 font-bold text-xl mb-3">₹{m.price}</p>
               <div className="mt-auto flex justify-between items-center text-sm font-medium">
                 <span className={m.isAvailable !== false ? 'text-green-400' : 'text-slate-500'}>
@@ -196,44 +205,50 @@ export default function MenuPage({ userRole }: { userRole: string }) {
 
       {isModalOpen && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm">
-          <div className="bg-slate-800 w-full max-w-lg rounded-2xl shadow-2xl p-6 border border-slate-700">
-            <div className="flex justify-between items-center mb-6 border-b border-slate-700 pb-4">
-              <h3 className="font-bold text-xl text-white">{editingItem ? 'Edit Item' : 'New Menu Item'}</h3>
-              <button onClick={() => setIsModalOpen(false)}><X className="text-slate-400 hover:text-white" /></button>
+          <div
+            className="w-full max-w-lg rounded-2xl shadow-2xl p-6 border"
+            style={{ background: cardBg, borderColor: cardBorder }}
+          >
+            <div className="flex justify-between items-center mb-6 border-b pb-4" style={{ borderColor: cardBorder }}>
+              <h3 className="font-bold text-xl" style={{ color: textPrimary }}>{editingItem ? 'Edit Item' : 'New Menu Item'}</h3>
+              <button onClick={() => setIsModalOpen(false)}><X className="hover:text-orange-500" style={{ color: textPrimary }} /></button>
             </div>
             <form onSubmit={handleSave} className="space-y-4">
-              <input type="text" placeholder="Item Name" value={name} onChange={e=>setName(e.target.value)} required className="w-full px-4 py-3 bg-slate-900 text-white border border-slate-700 focus:border-orange-500 disabled:opacity-50 rounded-xl outline-none" />
+              <input type="text" placeholder="Item Name" value={name} onChange={e=>setName(e.target.value)} required
+                className="w-full px-4 py-3 rounded-xl outline-none border focus:border-orange-500"
+                style={{ background: inputBg, color: textPrimary, borderColor: cardBorder }} />
               <div className="grid grid-cols-2 gap-4">
-                <input type="number" placeholder="Price (₹)" value={price} onChange={e=>setPrice(e.target.value)} required className="w-full px-4 py-3 bg-slate-900 text-white border border-slate-700 focus:border-orange-500 rounded-xl outline-none" />
-                <select value={category} onChange={e=>setCategory(e.target.value as any)} className="w-full px-4 py-3 bg-slate-900 text-white border border-slate-700 focus:border-orange-500 rounded-xl outline-none">
+                <input type="number" placeholder="Price (₹)" value={price} onChange={e=>setPrice(e.target.value)} required
+                  className="w-full px-4 py-3 rounded-xl outline-none border focus:border-orange-500"
+                  style={{ background: inputBg, color: textPrimary, borderColor: cardBorder }} />
+                <select value={category} onChange={e=>setCategory(e.target.value as any)}
+                  className="w-full px-4 py-3 rounded-xl outline-none border focus:border-orange-500"
+                  style={{ background: inputBg, color: textPrimary, borderColor: cardBorder }}>
                   <option value="Veg">Veg</option>
                   <option value="Non-Veg">Non-Veg</option>
                   <option value="Drinks">Drinks</option>
                 </select>
               </div>
-              <textarea placeholder="Description" value={description} onChange={e=>setDescription(e.target.value)} required className="w-full px-4 py-3 bg-slate-900 text-white border border-slate-700 focus:border-orange-500 rounded-xl outline-none min-h-[100px]" />
-              
+              <textarea placeholder="Description" value={description} onChange={e=>setDescription(e.target.value)} required
+                className="w-full px-4 py-3 rounded-xl outline-none border focus:border-orange-500 min-h-[100px]"
+                style={{ background: inputBg, color: textPrimary, borderColor: cardBorder }} />
               <div className="flex items-center gap-4">
                  <input type="checkbox" id="avail" checked={isAvailable} onChange={e => setIsAvailable(e.target.checked)} className="w-5 h-5 accent-orange-500" />
-                 <label htmlFor="avail" className="text-white font-medium cursor-pointer">Available in Menu</label>
+                 <label htmlFor="avail" className="font-medium cursor-pointer" style={{ color: textPrimary }}>Available in Menu</label>
               </div>
-
               <div>
-                <input type="number" placeholder="Stock Quantity (Leave empty for infinite)" value={stock} onChange={e => setStock(e.target.value)} className="w-full px-4 py-3 bg-slate-900 text-white border border-slate-700 focus:border-orange-500 rounded-xl outline-none" />
+                <input type="number" placeholder="Stock Quantity (Leave empty for infinite)" value={stock} onChange={e => setStock(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl outline-none border focus:border-orange-500"
+                  style={{ background: inputBg, color: textPrimary, borderColor: cardBorder }} />
               </div>
-
               <div className="space-y-4">
                 <div className="relative">
-                  <input 
-                    type="text" 
-                    placeholder="Paste Image URL (Faster)" 
-                    value={pastedUrl} 
-                    onChange={e => setPastedUrl(e.target.value)} 
-                    className="w-full px-4 py-3 bg-slate-900 text-white border border-slate-700 focus:border-orange-500 rounded-xl outline-none text-sm"
-                  />
+                  <input type="text" placeholder="Paste Image URL (Faster)" value={pastedUrl} onChange={e => setPastedUrl(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl outline-none border focus:border-orange-500 text-sm"
+                    style={{ background: inputBg, color: textPrimary, borderColor: cardBorder }} />
                 </div>
-                
-                <div className="relative border-2 border-dashed border-slate-700 hover:border-orange-500 transition-colors rounded-xl h-20 flex items-center justify-center bg-slate-900 group">
+                <div className="relative border-2 border-dashed hover:border-orange-500 transition-colors rounded-xl h-20 flex items-center justify-center group"
+                  style={{ borderColor: cardBorder, background: inputBg }}>
                   <input type="file" onChange={e => { setImage(e.target.files?.[0] || null); setPastedUrl(''); }} className="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" />
                   <div className="flex flex-col items-center">
                     <Upload className="text-slate-500 mb-1 group-hover:text-orange-500 transition-colors" size={18} />

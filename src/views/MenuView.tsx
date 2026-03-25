@@ -124,82 +124,96 @@ export default function MenuView({ menu, onAddToCart, language, setLanguage, use
     <div className="space-y-8 animate-in fade-in duration-700">
       {/* Debug Indicator removed */}
 
-      {/* Hero Section */}
-      <div className="relative h-[350px] rounded-[2rem] overflow-hidden group shadow-2xl shadow-black/50">
+      {/* ── HERO ── */}
+      <div className="relative h-[420px] rounded-[2.5rem] overflow-hidden shadow-2xl">
         <img
-          src="https://images.unsplash.com/photo-1600891964599-f61ba0e24092?auto=format&fit=crop&q=80&w=2070"
+          src="https://www.lekhafoods.com/media/172247/tamilnadu-non-veg-biryani-recipes.jpg"
           alt="Hero"
-          className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-[2s]"
+          className="w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-[3s]"
           referrerPolicy="no-referrer"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent flex flex-col justify-center px-8 sm:px-16">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-5xl sm:text-7xl font-black text-white tracking-tighter leading-tight"
-          >
-            {language === 'en' ? 'DELICIOUSLY' : 'சுவையான'} <br />
-            <span className="text-orange-500">{language === 'en' ? 'DELIVERED' : 'உணவு விநியோகம் 🍛'}</span>
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="text-slate-300 mt-6 text-xl max-w-lg font-bold leading-relaxed opacity-90"
-          >
-            {language === 'en' ? 'Experience the peak of cloud kitchen excellence at your doorstep.' : 'உங்கள் வீட்டுக்கு நேரடியாக சூடான மற்றும் சுவையான தமிழ் உணவுகள்! 🛵🔥'}
-          </motion.p>
-          <div className="mt-8 flex gap-4">
+        {/* Overlay */}
+        <div className="hero-overlay absolute inset-0" />
+        {/* Content */}
+        <div className="absolute inset-0 flex flex-col justify-center px-8 sm:px-14">
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+            <p className="section-label mb-4">✦ Tamil Nadu&apos;s Finest Cloud Kitchen</p>
+            <h1 className="text-5xl sm:text-7xl font-black text-white tracking-tighter leading-[0.95] mb-4">
+              {language === 'en' ? (
+                <><span>From Our Kitchen</span><br />
+                <span style={{ color: 'var(--brand)' }}>To Your Table</span></>
+              ) : (
+                <><span>எங்கள் சமையலறையில்</span><br />
+                <span style={{ color: 'var(--brand)' }}>உங்கள் மேசைக்கு 🍛</span></>
+              )}
+            </h1>
+            <p className="text-zinc-300 text-lg max-w-lg font-medium leading-relaxed mb-8">
+              {language === 'en'
+                ? 'Fresh, authentic Tamil Nadu flavours — crafted with love and delivered hot to your door.'
+                : 'உங்கள் வீட்டுக்கு நேரடியாக சூடான, சுவையான தமிழ் உணவுகள்!'}
+            </p>
             <button
               onClick={() => document.getElementById('menu-grid')?.scrollIntoView({ behavior: 'smooth' })}
-              className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-2 transition-all shadow-xl shadow-orange-600/30 active:scale-95"
+              className="btn-brand inline-flex items-center gap-2 text-base"
             >
-              Order Now
+              Order Now →
             </button>
-          </div>
+          </motion.div>
         </div>
       </div>
 
-      {/* Controls Container */}
-      <div className="sticky top-20 z-40 py-4 bg-[#0b1120]/80 backdrop-blur-xl border-b border-slate-800/50 -mx-4 px-4 sm:mx-0 sm:px-0">
-        <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
-          <div className="flex items-center gap-4 w-full md:w-auto">
+      {/* ── SEARCH & FILTER BAR ── */}
+      <div className="sticky top-16 z-40 py-4 -mx-4 px-4 sm:mx-0 sm:px-0 transition-all"
+        style={{ background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--nav-border)', transition: 'background 0.3s ease' }}>
+        <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+          {/* Search */}
+          <div className="flex items-center gap-3 w-full md:w-auto">
             <div className="relative flex-1 md:w-96 group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-orange-500 transition-colors" size={20} />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-orange-500 transition-colors" size={18} />
               <input
                 type="text"
-                placeholder={language === 'en' ? "Search for dishes..." : "உணவுகளைத் தேடுங்கள்..."}
+                placeholder={language === 'en' ? 'Search dishes...' : 'உணவுகளைத் தேடுங்கள்...'}
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-12 pr-14 py-4 bg-[#1e293b] border border-slate-800 text-white rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none transition-all placeholder:text-slate-600"
+                onChange={e => setSearch(e.target.value)}
+                className="w-full pl-11 pr-12 py-3.5 rounded-2xl text-sm font-medium outline-none transition-all"
+                style={{
+                  background: 'var(--bg-elevated)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-primary)',
+                }}
+                onFocus={e => (e.currentTarget.style.borderColor = 'rgba(249,115,22,0.5)')}
+                onBlur={e => (e.currentTarget.style.borderColor = 'var(--border)')}
               />
-              <button 
-                onClick={startVoiceOrdering}
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-orange-500/10 text-orange-500 rounded-lg hover:bg-orange-500 hover:text-white transition-all shadow-md active:scale-95"
-                title="Speak to Order"
-              >
-                <Mic size={16} />
+              <button onClick={startVoiceOrdering}
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-lg text-zinc-500 hover:text-orange-500 hover:bg-orange-500/10 transition-all">
+                <Mic size={14} />
               </button>
             </div>
             <button
               onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')}
-              className="p-4 bg-[#1e293b] border border-slate-800 rounded-2xl hover:bg-slate-800 transition-all flex items-center gap-3 text-sm font-bold text-white shadow-lg"
-            >
-              <Languages size={20} className="text-orange-500" />
+              className="flex items-center gap-2 px-4 py-3.5 rounded-2xl text-sm font-bold whitespace-nowrap transition-all"
+              style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
+              <Languages size={16} className="text-orange-500" />
               <span className="hidden sm:inline">{language === 'en' ? 'தமிழ்' : 'English'}</span>
             </button>
           </div>
-
-          <div className="flex gap-3 w-full md:w-auto overflow-x-auto no-scrollbar pb-1">
+          {/* Categories */}
+          <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-1">
             {categories.map(cat => (
               <button
                 key={cat}
                 onClick={() => setCategory(cat)}
-                className={`px-8 py-3 rounded-2xl text-sm font-bold transition-all whitespace-nowrap shadow-lg ${category === cat
-                    ? 'bg-orange-600 text-white scale-105 shadow-orange-600/20'
-                    : 'bg-[#1e293b] text-slate-400 border border-slate-800 hover:text-white hover:bg-slate-800'
-                  }`}
-              >
+                className={`px-5 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
+                  category === cat
+                    ? 'text-white shadow-lg shadow-orange-600/30'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+                style={{
+                  background: category === cat
+                    ? 'linear-gradient(135deg, #f97316, #ea580c)'
+                    : 'var(--bg-elevated)',
+                  border: category === cat ? 'none' : '1px solid var(--border)',
+                }}>
                 {cat}
               </button>
             ))}
@@ -207,18 +221,18 @@ export default function MenuView({ menu, onAddToCart, language, setLanguage, use
         </div>
       </div>
 
-      {/* Featured AI Recommendations */}
+      {/* ── AI RECOMMENDATIONS ── */}
       {search === '' && category === 'All' && (
-        <div className="space-y-6">
+        <div className="space-y-5">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-orange-500/10 rounded-xl text-orange-500">
-              <Sparkles size={24} />
+            <div className="p-2 rounded-xl" style={{ background: 'rgba(249,115,22,0.1)' }}>
+              <Sparkles size={20} className="text-orange-500" />
             </div>
             <div>
-              <h2 className="text-2xl font-black text-white tracking-tight uppercase">
-                {language === 'en' ? 'Recommended for you' : 'உங்களுக்காக பரிந்துரைக்கப்படுகிறது'}
+              <h2 className="text-lg font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>
+                {language === 'en' ? 'Recommended for You' : 'உங்களுக்காக பரிந்துரை'}
               </h2>
-              <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">True AI Based suggestions ✨</p>
+              <p className="section-label">AI Powered ✦</p>
             </div>
           </div>
           {recsLoading ? (
@@ -242,10 +256,10 @@ export default function MenuView({ menu, onAddToCart, language, setLanguage, use
         </div>
       )}
 
-      {/* Menu Grid */}
-      <div id="menu-grid" className="space-y-6">
-        <h2 className="text-2xl font-black text-white tracking-tight uppercase">
-          {category === 'All' ? (language === 'en' ? 'Our Full Menu' : 'முழு மெனு') : category}
+      {/* ── FULL MENU ── */}
+      <div id="menu-grid" className="space-y-5">
+        <h2 className="text-lg font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>
+          {category === 'All' ? (language === 'en' ? 'Full Menu' : 'முழு மெனு') : category}
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {filteredMenu.map((item, idx) => (

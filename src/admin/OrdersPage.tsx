@@ -4,8 +4,11 @@ import { db } from '../firebase';
 import { Order } from '../types';
 import Table from '../components/Table';
 import toast from 'react-hot-toast';
+import { useAdminTheme } from './ThemeContext';
 
 export default function OrdersPage({ userRole }: { userRole: string }) {
+  const isDark = useAdminTheme();
+  const textPrimary = isDark ? '#f1f5f9' : '#0f172a';
   const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
@@ -35,13 +38,18 @@ export default function OrdersPage({ userRole }: { userRole: string }) {
 
   const columns = [
     { key: 'id', header: 'Order ID', render: (o: Order) => <span className="font-mono text-xs text-slate-400">#{o.id.slice(-6)}</span> },
-    { key: 'contact', header: 'Customer', render: (o: Order) => (
+    { key: 'contact', header: 'Customer', render: (o: any) => (
       <div>
-         <p className="font-medium text-white">{o.userId.slice(0, 8)}...</p>
-         <p className="text-xs text-slate-500 truncate w-40">{o.items.length} items ({o.items.map(i=>i.name).join(', ')})</p>
+         <p className="font-medium" style={{ color: textPrimary }}>{o.userId.slice(0, 8)}...</p>
+         <p className="text-xs text-slate-500 truncate w-40">{o.items.length} items ({o.items.map((i: any)=>i.name).join(', ')})</p>
+         {o.deliveryTime && (
+           <p className="text-[10px] font-bold text-orange-500 mt-1">
+             Schedule: {new Date(o.deliveryTime).toLocaleString()}
+           </p>
+         )}
       </div>
     )},
-    { key: 'totalAmount', header: 'Amount (₹)', render: (o: Order) => <span className="font-bold text-white">₹{o.totalAmount}</span> },
+    { key: 'totalAmount', header: 'Amount (₹)', render: (o: Order) => <span className="font-bold" style={{ color: textPrimary }}>₹{o.totalAmount}</span> },
     { key: 'status', header: 'Status', render: (o: Order) => (
       <span className={`px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-lg border ${statusColors[o.status as keyof typeof statusColors] || 'text-slate-400'}`}>
         {o.status}
@@ -51,7 +59,9 @@ export default function OrdersPage({ userRole }: { userRole: string }) {
        <select 
           value={o.status}
           onChange={(e) => updateStatus(o.id, e.target.value)}
-          className="bg-slate-900 border border-slate-700 text-white text-sm rounded-lg px-2 py-1 outline-none focus:border-orange-500 cursor-pointer"
+          disabled={o.status === 'Cancelled'}
+          className={`text-sm rounded-lg px-2 py-1 outline-none border ${o.status === 'Cancelled' ? 'opacity-50 cursor-not-allowed' : 'focus:border-orange-500 cursor-pointer'}`}
+          style={{ background: isDark ? '#0f172a' : '#f8fafc', color: textPrimary, borderColor: isDark ? '#334155' : '#e2e8f0' }}
        >
           <option value="Pending">Pending</option>
           <option value="Preparing">Preparing</option>

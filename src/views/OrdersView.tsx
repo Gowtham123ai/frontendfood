@@ -80,8 +80,8 @@ export default function OrdersView({ user }: OrdersViewProps) {
         <div className="w-20 h-20 bg-slate-900 rounded-full flex items-center justify-center text-slate-700 mx-auto mb-6 border border-slate-800">
            <Package size={32} />
         </div>
-        <h2 className="text-2xl font-bold text-white">No orders yet</h2>
-        <p className="text-slate-500 mt-2">Hungry? Place your first order now! 🍛</p>
+        <h2 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>No orders yet</h2>
+        <p className="mt-2" style={{ color: 'var(--text-muted)' }}>Hungry? Place your first order now! 🍛</p>
       </div>
     );
   }
@@ -89,7 +89,7 @@ export default function OrdersView({ user }: OrdersViewProps) {
 
   return (
     <div className="max-w-4xl mx-auto space-y-12 pb-20">
-      <h2 className="text-4xl font-black text-white tracking-tight">Order History</h2>
+      <h2 className="text-4xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>Order History</h2>
       
       <div className="space-y-8">
         {orders.map((order) => (
@@ -97,12 +97,14 @@ export default function OrdersView({ user }: OrdersViewProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             key={order.id}
-            className="bg-[#111827] rounded-[2.5rem] border border-slate-800 shadow-2xl overflow-hidden"
+            className="rounded-[2.5rem] border shadow-2xl overflow-hidden"
+            style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
           >
-            <div className="p-8 border-b border-slate-800 flex flex-wrap justify-between items-center gap-6 bg-[#111827]/50">
+            <div className="p-8 border-b flex flex-wrap justify-between items-center gap-6"
+              style={{ background: 'var(--bg-elevated)', borderColor: 'var(--border)' }}>
               <div className="space-y-2">
-                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Order #{order.id.slice(-8)}</p>
-                <p className="text-sm text-slate-400 font-medium">
+                <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Order #{order.id.slice(-8)}</p>
+                <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
                   {format(getOrderDate(order.createdAt), 'PPP p')}
                 </p>
               </div>
@@ -125,26 +127,35 @@ export default function OrdersView({ user }: OrdersViewProps) {
             <div className="p-8 space-y-6">
               <div className="space-y-4">
                 {order.items.map((item, i) => (
-                  <div key={i} className="flex justify-between items-center bg-[#0b1120] p-4 rounded-2xl border border-slate-800/50">
+                  <div key={i} className="flex justify-between items-center p-4 rounded-2xl border"
+                    style={{ background: 'var(--bg-elevated)', borderColor: 'var(--border)' }}>
                     <div className="flex items-center gap-4">
                       <span className="text-orange-500 text-sm font-black w-8 h-8 flex items-center justify-center bg-orange-500/10 rounded-lg">{item.quantity}x</span>
-                      <span className="text-white font-bold">{item.name}</span>
+                      <span className="font-bold" style={{ color: 'var(--text-primary)' }}>{item.name}</span>
                     </div>
-                    <span className="text-slate-400 font-bold">₹{item.price * item.quantity}</span>
+                    <span className="font-bold" style={{ color: 'var(--text-muted)' }}>₹{item.price * item.quantity}</span>
                   </div>
                 ))}
               </div>
 
               <div className="pt-6 border-t border-slate-800 flex flex-col sm:flex-row justify-between items-end gap-6">
-                <div className="flex items-start gap-3 text-slate-400 text-sm max-w-sm">
-                  <MapPin size={18} className="mt-1 flex-shrink-0 text-slate-600" />
-                  <span className="leading-relaxed">
-                    {typeof order.address === 'string' ? order.address : (order.address as any)?.address || 'Address details in order'}
-                  </span>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3 text-slate-400 text-sm max-w-sm" style={{ color: 'var(--text-muted)' }}>
+                    <MapPin size={18} className="mt-1 flex-shrink-0" />
+                    <span className="leading-relaxed">
+                      {typeof order.address === 'string' ? order.address : (order.address as any)?.address || 'Address details in order'}
+                    </span>
+                  </div>
+                  {order.deliveryTime && (
+                    <div className="flex items-center gap-3 text-orange-500 font-bold text-sm bg-orange-500/10 px-4 py-2 rounded-xl inline-flex shadow-inner">
+                      <Clock size={16} />
+                      Scheduled: {format(new Date(order.deliveryTime), 'PPP p')}
+                    </div>
+                  )}
                 </div>
                 <div className="text-right">
                   <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Total Paid</p>
-                  <p className="text-4xl font-black text-white">₹{order.totalAmount}</p>
+                  <p className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>₹{order.totalAmount}</p>
                 </div>
               </div>
             </div>

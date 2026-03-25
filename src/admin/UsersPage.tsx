@@ -4,8 +4,11 @@ import { db } from '../firebase';
 import { UserProfile } from '../types';
 import Table from '../components/Table';
 import toast from 'react-hot-toast';
+import { useAdminTheme } from './ThemeContext';
 
 export default function UsersPage({ userRole }: { userRole: string }) {
+  const isDark = useAdminTheme();
+  const textPrimary = isDark ? '#f1f5f9' : '#0f172a';
   const [users, setUsers] = useState<UserProfile[]>([]);
 
   useEffect(() => {
@@ -35,13 +38,14 @@ export default function UsersPage({ userRole }: { userRole: string }) {
   };
 
   const columns = [
-    { key: 'name', header: 'Name', render: (u: UserProfile) => <span className="font-bold text-white">{u.name || 'Anonymous User'}</span> },
+    { key: 'name', header: 'Name', render: (u: UserProfile) => <span className="font-bold" style={{ color: textPrimary }}>{u.name || 'Anonymous User'}</span> },
     { key: 'email', header: 'Email', render: (u: UserProfile) => <span className="text-slate-400 text-sm">{u.email || u.phone}</span> },
     { key: 'role', header: 'Role', render: (u: UserProfile) => (
       <select 
         value={u.role} 
         onChange={e => assignRole(u.uid, e.target.value)}
-        className="bg-slate-900 border border-slate-700 text-white text-sm rounded-lg px-2 py-1 outline-none focus:border-orange-500 cursor-pointer"
+        className="text-sm rounded-lg px-2 py-1 outline-none focus:border-orange-500 cursor-pointer border"
+        style={{ background: isDark ? '#0f172a' : '#f8fafc', color: textPrimary, borderColor: isDark ? '#334155' : '#e2e8f0' }}
       >
         <option value="user">User</option>
         <option value="manager">Manager</option>

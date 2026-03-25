@@ -5,8 +5,12 @@ import { Order } from '../types';
 import Card from '../components/Card';
 import { Truck, MapPin, Phone, Package, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAdminTheme } from './ThemeContext';
 
 export default function DeliveryPage() {
+  const isDark = useAdminTheme();
+  const textPrimary = isDark ? '#f1f5f9' : '#0f172a';
+  const textMuted   = isDark ? '#94a3b8' : '#64748b';
   const [activeDeliveries, setActiveDeliveries] = useState<Order[]>([]);
 
   useEffect(() => {
@@ -33,8 +37,8 @@ export default function DeliveryPage() {
           <Card key={order.id} className="border-l-4 border-l-blue-500">
             <div className="flex justify-between items-start mb-4">
               <div>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Order ID</p>
-                <h4 className="font-mono text-white text-sm">#{order.id.slice(-8)}</h4>
+                <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: textMuted }}>Order ID</p>
+                <h4 className="font-mono text-sm" style={{ color: textPrimary }}>#{order.id.slice(-8)}</h4>
               </div>
               <span className={`px-2 py-1 rounded text-[10px] font-bold ${order.status === 'Preparing' ? 'bg-blue-500/10 text-blue-500' : 'bg-purple-500/10 text-purple-500'}`}>
                 {order.status}
@@ -44,17 +48,17 @@ export default function DeliveryPage() {
             <div className="space-y-3 mb-6">
               <div className="flex items-start gap-3">
                 <MapPin size={16} className="text-slate-500 mt-1 shrink-0" />
-                <p className="text-slate-300 text-sm line-clamp-2">
+                <p className="text-sm line-clamp-2" style={{ color: textMuted }}>
                   {typeof order.address === 'string' ? order.address : (order.address as any)?.address || 'Address details in order'}
                 </p>
               </div>
               <div className="flex items-center gap-3">
                 <Phone size={16} className="text-slate-500 shrink-0" />
-                <p className="text-slate-300 text-sm">Customer Contact Hidden</p>
+                <p className="text-sm" style={{ color: textMuted }}>Customer Contact Hidden</p>
               </div>
               <div className="flex items-center gap-3">
                 <Package size={16} className="text-slate-500 shrink-0" />
-                <p className="text-slate-300 text-sm font-bold">₹{order.totalAmount}</p>
+                <p className="text-sm font-bold" style={{ color: textPrimary }}>₹{order.totalAmount}</p>
               </div>
             </div>
 
@@ -80,9 +84,10 @@ export default function DeliveryPage() {
       </div>
 
       {activeDeliveries.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-20 bg-slate-800/50 rounded-3xl border border-slate-700 border-dashed">
-            <Truck size={48} className="text-slate-600 mb-4" />
-            <p className="text-slate-400 font-medium">No active deliveries at the moment</p>
+        <div className="flex flex-col items-center justify-center py-20 rounded-3xl border border-dashed"
+          style={{ background: isDark ? 'rgba(30,41,59,0.5)' : '#fafaf8', borderColor: isDark ? '#334155' : '#e2e8f0' }}>
+            <Truck size={48} className="text-slate-500 mb-4" />
+            <p className="font-medium" style={{ color: textMuted }}>No active deliveries at the moment</p>
         </div>
       )}
     </div>
