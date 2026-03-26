@@ -215,14 +215,14 @@ async function sendOrderSMS(phone, orderId, amount, userName) {
       body: params.toString()
     });
     
+    const data = await response.json();
     if (response.ok) {
-      console.log("✅ SMS sent successfully to:", formattedPhone);
+      console.log("✅ SMS sent successfully! SID:", data.sid, "To:", formattedPhone);
     } else {
-      const data = await response.json();
-      console.error("❌ Twilio SMS failed:", data);
+      console.error("❌ Twilio API Error:", data.message, "Full Error:", JSON.stringify(data));
     }
   } catch (err) {
-    console.error("❌ SMS Error:", err);
+    console.error("❌ Network/Twilio Connection Error:", err.message);
   }
 }
 
@@ -254,8 +254,11 @@ router.post("/send-cod-bill", async (req, res) => {
 
     // Send SMS
     const phone = orderData.addressDetails?.phone || orderData.phone;
+    console.log("📢 Attempting SMS to:", phone, "for COD order:", orderId);
     if (phone) {
       await sendOrderSMS(phone, orderId, orderData.totalAmount, orderData.userName);
+    } else {
+      console.warn("⚠️ Skipping SMS: No phone number found in order data.");
     }
 
     res.json({ success: true, message: "Email and SMS processed" });
