@@ -177,9 +177,9 @@ async function createInvoicePDF(order, filePath) {
 
 // SMS Helper Function
 async function sendOrderSMS(phone, orderId, amount, userName) {
-  const accountSid = process.env.TWILIO_ACCOUNT_SID;
-  const authToken = process.env.TWILIO_AUTH_TOKEN;
-  const twilioPhone = process.env.TWILIO_PHONE_NUMBER;
+  const accountSid = process.env.TWILIO_ACCOUNT_SID || process.env.AccountSID;
+  const authToken = process.env.TWILIO_AUTH_TOKEN || process.env.AuthToken;
+  const twilioPhone = process.env.TWILIO_PHONE_NUMBER || process.env.MyTwiliophonenumber;
 
   if (!accountSid || !authToken || !twilioPhone) {
     console.warn("⚠️ Twilio credentials missing. SMS skipped.");
