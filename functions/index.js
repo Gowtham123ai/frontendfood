@@ -245,6 +245,9 @@ exports.sendSMSOnOrder = functions.firestore
     }
 
     let formattedPhone = phone.replace(/[\s\-\(\)]/g, '').trim();
+    if (formattedPhone.startsWith('0')) {
+      formattedPhone = formattedPhone.substring(1);
+    }
     if (!formattedPhone.startsWith('+')) {
       formattedPhone = '+91' + formattedPhone; 
     }

@@ -192,6 +192,11 @@ async function sendOrderSMS(phone, orderId, amount, userName) {
   }
 
   let formattedPhone = phone.replace(/[\s\-\(\)]/g, '').trim();
+  // Strip leading zero if it exists (e.g. 09876543210 -> 9876543210)
+  if (formattedPhone.startsWith('0')) {
+    formattedPhone = formattedPhone.substring(1);
+  }
+  
   if (!formattedPhone.startsWith('+')) {
     formattedPhone = '+91' + formattedPhone; 
   }
