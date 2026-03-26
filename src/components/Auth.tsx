@@ -205,17 +205,17 @@ export default function Auth({ onAuthSuccess, adminOnly }: AuthProps) {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white p-8 rounded-3xl shadow-xl border border-stone-100">
+    <div className="max-w-md mx-auto bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-xl border border-stone-100 dark:border-slate-700 transition-colors">
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-stone-900">{isLogin ? 'Welcome Back' : 'Join Us'}</h2>
-        <p className="text-stone-500 mt-2">Experience the best cloud kitchen in town</p>
+        <h2 className="text-3xl font-bold text-stone-900 dark:text-white">{isLogin ? 'Welcome Back' : 'Join Us'}</h2>
+        <p className="text-stone-500 dark:text-slate-400 mt-2">Experience the best cloud kitchen in town</p>
       </div>
 
-      <div className="flex gap-4 mb-8 p-1 bg-stone-100 rounded-2xl">
+      <div className="flex gap-4 mb-8 p-1 bg-stone-100 dark:bg-slate-900 rounded-2xl transition-colors">
         <button
           onClick={() => setAuthMethod('email')}
           className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${
-            authMethod === 'email' ? 'bg-white shadow-sm text-stone-900' : 'text-stone-500'
+            authMethod === 'email' ? 'bg-white dark:bg-slate-700 shadow-sm text-stone-900 dark:text-white' : 'text-stone-500 dark:text-slate-400'
           }`}
         >
           Email
@@ -223,7 +223,7 @@ export default function Auth({ onAuthSuccess, adminOnly }: AuthProps) {
         <button
           onClick={() => setAuthMethod('phone')}
           className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${
-            authMethod === 'phone' ? 'bg-white shadow-sm text-stone-900' : 'text-stone-500'
+            authMethod === 'phone' ? 'bg-white dark:bg-slate-700 shadow-sm text-stone-900 dark:text-white' : 'text-stone-500 dark:text-slate-400'
           }`}
         >
           Phone
@@ -240,7 +240,7 @@ export default function Auth({ onAuthSuccess, adminOnly }: AuthProps) {
                 placeholder="Full Name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-slate-800 border border-slate-600 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-white placeholder-slate-400"
+                className="w-full pl-12 pr-4 py-3 bg-stone-50 dark:bg-slate-900 border border-stone-200 dark:border-slate-600 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-stone-900 dark:text-white placeholder-stone-400 dark:placeholder-slate-400"
                 required
               />
             </div>
@@ -252,7 +252,7 @@ export default function Auth({ onAuthSuccess, adminOnly }: AuthProps) {
               placeholder="Email Address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-slate-800 border border-slate-600 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-white placeholder-slate-400"
+              className="w-full pl-12 pr-4 py-3 bg-stone-50 dark:bg-slate-900 border border-stone-200 dark:border-slate-600 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-stone-900 dark:text-white placeholder-stone-400 dark:placeholder-slate-400"
               required
             />
           </div>
@@ -263,7 +263,7 @@ export default function Auth({ onAuthSuccess, adminOnly }: AuthProps) {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-slate-800 border border-slate-600 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-white placeholder-slate-400"
+              className="w-full pl-12 pr-4 py-3 bg-stone-50 dark:bg-slate-900 border border-stone-200 dark:border-slate-600 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-stone-900 dark:text-white placeholder-stone-400 dark:placeholder-slate-400"
               required
             />
           </div>
@@ -288,7 +288,7 @@ export default function Auth({ onAuthSuccess, adminOnly }: AuthProps) {
                     placeholder="Full Name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 bg-slate-800 border border-slate-600 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-white placeholder-slate-400"
+                    className="w-full pl-12 pr-4 py-3 bg-stone-50 dark:bg-slate-900 border border-stone-200 dark:border-slate-600 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-stone-900 dark:text-white placeholder-stone-400 dark:placeholder-slate-400"
                     required
                   />
                 </div>
@@ -320,7 +320,7 @@ export default function Auth({ onAuthSuccess, adminOnly }: AuthProps) {
                 placeholder="Enter 6-digit OTP"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-center text-2xl tracking-widest text-white placeholder-slate-400"
+                className="w-full px-4 py-3 bg-stone-50 dark:bg-slate-900 border border-stone-200 dark:border-slate-600 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-center text-2xl tracking-widest text-stone-900 dark:text-white placeholder-stone-400 dark:placeholder-slate-400"
                 maxLength={6}
                 required
               />

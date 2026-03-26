@@ -56,56 +56,174 @@ const transporter = nodemailer.createTransport({
 
 async function createInvoicePDF(order, filePath) {
   return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ margin: 50 });
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
     const writeStream = fs.createWriteStream(filePath);
 
     doc.pipe(writeStream);
 
-    // Header with Premium UI
-    doc.fillColor("#ff6b00").fontSize(25).text("MAGIZHAMUDHU Kitchen", { align: "center" });
-    doc.fontSize(10).fillColor("#444444").text("Deliciously Delivered", { align: "center" });
-    doc.moveDown();
+    // 1. HEADER (Logo & Brand Info)
+    doc.roundedRect(50, 40, 40, 40, 8).fill('#ea580c');
+    doc.fillColor('#ffffff').fontSize(24).font('Helvetica-Bold').text('F', 50, 48, { width: 40, align: 'center' });
+    
+    doc.fillColor('#ea580c').fontSize(22).text('MAGIZHAMUDHU Kitchen', 105, 42);
+    doc.fillColor('#6b7280').fontSize(10).font('Helvetica').text('Deliciously Delivered', 105, 66);
+    doc.fillColor('#9ca3af').fontSize(9).text('📧 support@magizhamudhu.com', 105, 80);
 
-    doc.strokeColor("#eeeeee").moveTo(50, doc.y).lineTo(550, doc.y).stroke();
-    doc.moveDown();
-
-    // Order Info
-    doc.fillColor("#000000").fontSize(12).text(`Order ID: ${order.id}`);
-    doc.text(`Date: ${new Date().toLocaleDateString()}`);
-    doc.text(`Customer: ${order.userName}`);
-    doc.text(`Address: ${order.address}`);
-    doc.moveDown();
-
-    // Table Header
-    doc.fillColor("#f3f4f6").rect(50, doc.y, 500, 20).fill();
-    doc.fillColor("#000000").fontSize(10).text("Item", 60, doc.y - 15);
-    doc.text("Qty", 350, doc.y - 15);
-    doc.text("Price", 450, doc.y - 15);
-    doc.moveDown(0.5);
-
-    // Items
-    order.items.forEach(item => {
-      doc.text(item.name, 60, doc.y);
-      doc.text(item.quantity.toString(), 350, doc.y - 10);
-      doc.text(`\u20B9${item.price}`, 450, doc.y - 10);
-      doc.moveDown(0.5);
-    });
-
-    doc.moveDown();
-    doc.strokeColor("#eeeeee").moveTo(50, doc.y).lineTo(550, doc.y).stroke();
-    doc.moveDown();
-
-    // Total Amount
-    doc.fontSize(15).fillColor("#ff6b00").text(`Total Amount: \u20B9${order.totalAmount}`, { align: "right" });
-
+    // Separator line
+    doc.strokeColor('#f3f4f6').lineWidth(2).moveTo(50, 110).lineTo(545, 110).stroke();
     doc.moveDown(2);
-    doc.fillColor("#666666").fontSize(10).text("\uD83C\uDF5B Thank you for ordering with MAGIZHAMUDHU! We hope you enjoy your meal.", { align: "center" });
+
+    // 2. ORDER INFO (Two Columns)
+    const topInfoY = 130;
+    
+    // Left side: Billing / Customer
+    doc.fillColor('#111827').fontSize(12).font('Helvetica-Bold').text('Invoice To:', 50, topInfoY);
+    doc.font('Helvetica').fontSize(10).fillColor('#4b5563');
+    doc.text(`Customer: ${order.userName || 'Guest'}`, 50, topInfoY + 18);
+    
+    // Handle long addresses gracefully
+    doc.text(`Address: ${order.address || 'N/A'}`, 50, topInfoY + 33, { width: 220 });
+    
+    let phoneY = doc.y + 5;
+    const phoneNum = order.addressDetails?.phone || order.phone;
+    if (phoneNum) {
+      doc.text(`Phone: ${phoneNum}`, 50, phoneY);
+    }
+
+    // Right side: Order Meta
+    doc.fillColor('#111827').fontSize(12).font('Helvetica-Bold').text('Order Summary:', 320, topInfoY);
+    
+    // Box for Invoice Number
+    doc.roundedRect(320, topInfoY + 16, 220, 22, 4).fill('#fff7ed');
+    doc.fillColor('#ea580c').font('Helvetica-Bold').fontSize(10);
+    // order.id fallback just in case
+    const shortId = (order.id || Date.now().toString()).slice(-6).toUpperCase();
+    doc.text(`Invoice #: INV-${shortId}`, 330, topInfoY + 22);
+
+    doc.font('Helvetica').fontSize(10).fillColor('#4b5563');
+    doc.text(`Date: ${new Date(order.createdAt || Date.now()).toLocaleDateString()}`, 320, topInfoY + 48);
+    doc.text(`Payment Mode: ${order.paymentMethod || 'Online'}`, 320, topInfoY + 63);
+    doc.text(`Status: ${order.status || 'Paid'}`, 320, topInfoY + 78);
+
+    doc.strokeColor('#f3f4f6').lineWidth(1).moveTo(50, 240).lineTo(545, 240).stroke();
+
+    // 3. TABLE BODY
+    const tableTop = 260;
+    
+    doc.roundedRect(50, tableTop, 495, 25, 4).fill('#f9fafb');
+    doc.fillColor('#374151').font('Helvetica-Bold').fontSize(10);
+    doc.text('Item Description', 65, tableTop + 8);
+    doc.text('Qty', 330, tableTop + 8, { width: 30, align: 'center' });
+    doc.text('Price', 390, tableTop + 8, { width: 60, align: 'right' });
+    doc.text('Subtotal', 470, tableTop + 8, { width: 60, align: 'right' });
+
+    let y = tableTop + 35;
+    doc.font('Helvetica').fillColor('#1f2937');
+    
+    if (order.items && order.items.length > 0) {
+      order.items.forEach((item, index) => {
+          const itemSubtotal = item.quantity * item.price;
+          doc.text(item.name, 65, y, { width: 250 });
+          doc.text(item.quantity.toString(), 330, y, { width: 30, align: 'center' });
+          // Using Rs. because default PDFKit font lacks ₹ symbol
+          doc.text(`Rs. ${item.price.toFixed(2)}`, 390, y, { width: 60, align: 'right' });
+          doc.text(`Rs. ${itemSubtotal.toFixed(2)}`, 470, y, { width: 60, align: 'right' });
+          
+          y += Math.max(20, doc.heightOfString(item.name, { width: 250 }) + 5);
+          
+          if (index < order.items.length - 1) {
+              doc.strokeColor('#f3f4f6').lineWidth(0.5).moveTo(50, y - 5).lineTo(545, y - 5).stroke();
+          }
+      });
+    }
+
+    // 4. HIGHLIGHT TOTAL SECTION
+    const totalsTop = Math.max(y + 10, 350);
+    doc.strokeColor('#e5e7eb').lineWidth(1.5).moveTo(300, totalsTop).lineTo(545, totalsTop).stroke();
+    
+    const subtotalTop = totalsTop + 15;
+    doc.font('Helvetica').fontSize(10).fillColor('#6b7280');
+    doc.text('Subtotal:', 350, subtotalTop);
+    doc.fillColor('#111827').text(`Rs. ${Number(order.totalAmount).toFixed(2)}`, 450, subtotalTop, { width: 80, align: 'right' });
+
+    const deliveryTop = subtotalTop + 20;
+    doc.fillColor('#6b7280').text('Delivery Fee:', 350, deliveryTop);
+    doc.fillColor('#10b981').text('FREE', 450, deliveryTop, { width: 80, align: 'right' });
+    
+    // Total Shaded Box
+    const finalTotalTop = deliveryTop + 20;
+    doc.roundedRect(300, finalTotalTop - 5, 245, 34, 6).fill('#fff7ed');
+    doc.font('Helvetica-Bold').fontSize(14).fillColor('#ea580c');
+    doc.text('Total Amount:', 320, finalTotalTop + 5);
+    doc.text(`Rs. ${Number(order.totalAmount).toFixed(2)}`, 420, finalTotalTop + 5, { width: 110, align: 'right' });
+
+    // 5. PROFESSIONAL FOOTER
+    const footerTop = 720;
+    doc.strokeColor('#f3f4f6').lineWidth(2).moveTo(50, footerTop - 15).lineTo(545, footerTop - 15).stroke();
+    
+    doc.fillColor('#ea580c').font('Helvetica-Bold').fontSize(11);
+    doc.text('Thank you for ordering with MAGIZHAMUDHU \u2764\uFE0F', 50, footerTop, { align: 'center' });
+    
+    doc.fillColor('#6b7280').font('Helvetica').fontSize(9);
+    doc.text('Follow us: Instagram @magizhamudhu | WhatsApp +91 98765 43210', 50, footerTop + 20, { align: 'center' });
+    doc.text('Return/Support inquiries: support@magizhamudhu.com', 50, footerTop + 35, { align: 'center' });
 
     doc.end();
 
     writeStream.on("finish", () => resolve(filePath));
     writeStream.on("error", reject);
   });
+}
+
+// SMS Helper Function
+async function sendOrderSMS(phone, orderId, amount, userName) {
+  const accountSid = process.env.TWILIO_ACCOUNT_SID;
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+  const twilioPhone = process.env.TWILIO_PHONE_NUMBER;
+
+  if (!accountSid || !authToken || !twilioPhone) {
+    console.warn("⚠️ Twilio credentials missing. SMS skipped.");
+    return;
+  }
+
+  if (!phone) {
+    console.warn("⚠️ No phone number provided for SMS.");
+    return;
+  }
+
+  let formattedPhone = phone.replace(/[\s\-\(\)]/g, '').trim();
+  if (!formattedPhone.startsWith('+')) {
+    formattedPhone = '+91' + formattedPhone; 
+  }
+
+  const message = `Hi ${userName}, your order #${orderId.slice(-6)} for Rs.${amount} is confirmed. Thank you for choosing MAGIZHAMUDHU Kitchen!`;
+
+  const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
+  const params = new URLSearchParams({
+    To: formattedPhone,
+    From: twilioPhone,
+    Body: message
+  });
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Basic ' + Buffer.from(`${accountSid}:${authToken}`).toString('base64'),
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: params.toString()
+    });
+    
+    if (response.ok) {
+      console.log("✅ SMS sent successfully to:", formattedPhone);
+    } else {
+      const data = await response.json();
+      console.error("❌ Twilio SMS failed:", data);
+    }
+  } catch (err) {
+    console.error("❌ SMS Error:", err);
+  }
 }
 
 // Routes
@@ -134,7 +252,13 @@ router.post("/send-cod-bill", async (req, res) => {
 
     if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
 
-    res.json({ success: true, message: "Email sent" });
+    // Send SMS
+    const phone = orderData.addressDetails?.phone || orderData.phone;
+    if (phone) {
+      await sendOrderSMS(phone, orderId, orderData.totalAmount, orderData.userName);
+    }
+
+    res.json({ success: true, message: "Email and SMS processed" });
   } catch (err) {
     console.error("COD Email Error:", err);
     res.status(500).json({ success: false, error: err.message });
@@ -176,6 +300,16 @@ router.post("/verify-payment", async (req, res) => {
 
     // Signature verified!
     // Since backend lacks service account, client will handle Firestore save & email.
+    
+    // Optionally trigger SMS if orderData is present
+    if (orderData) {
+      const phone = orderData.addressDetails?.phone || orderData.phone;
+      const orderId = orderData.id || razorpay_order_id;
+      if (phone) {
+         await sendOrderSMS(phone, orderId, orderData.totalAmount, orderData.userName);
+      }
+    }
+
     res.json({ success: true });
   } catch (err) {
     console.error("Verify Error:", err);

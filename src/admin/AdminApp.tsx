@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Moon, Sun } from 'lucide-react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
@@ -41,6 +42,34 @@ export default function AdminApp() {
     return () => unsubscribeAuth();
   }, []);
 
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return document.documentElement.classList.contains('dark');
+    }
+    return true; // Default dark for admin
+  });
+
+  const toggleTheme = () => {
+    setIsDarkMode((prev) => {
+      const newMode = !prev;
+      if (newMode) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      return newMode;
+    });
+  };
+
+  // Enforce the initial body/HTML classes
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900">
@@ -51,14 +80,25 @@ export default function AdminApp() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
+      <div className={`min-h-screen flex items-center justify-center p-4 transition-colors ${isDarkMode ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900'}`}>
+        {/* Toggle Button */}
+        <button
+          onClick={toggleTheme}
+          className={`absolute top-6 right-6 p-3 rounded-xl transition-all ${
+            isDarkMode ? 'bg-slate-800 text-yellow-400 hover:bg-slate-700' : 'bg-white shadow-md text-slate-600 hover:text-orange-500'
+          }`}
+          title="Toggle Theme"
+        >
+          {isDarkMode ? <Sun size={24} /> : <Moon size={24} />}
+        </button>
+
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <div className="inline-flex w-16 h-16 bg-orange-500 rounded-2xl items-center justify-center text-white font-bold text-3xl mb-4 shadow-lg shadow-orange-500/20">
               F
             </div>
-            <h1 className="text-2xl font-bold text-white">MAGIZHAMUDHU Admin</h1>
-            <p className="text-slate-400">Restricted Access - Authorized Personnel Only</p>
+            <h1 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>MAGIZHAMUDHU Admin</h1>
+            <p className={isDarkMode ? 'text-slate-400' : 'text-slate-500'}>Restricted Access - Authorized Personnel Only</p>
           </div>
           <Auth
             onAuthSuccess={(profile) => setUser(profile)}
